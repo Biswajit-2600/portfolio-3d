@@ -29,10 +29,10 @@ function App() {
 
         {showOptions && (
           <div className="flex gap-6">
-            <button className="start-button animate-neonPulse">
+            <button className="start-button buttonFadeIn">
               FPP
             </button>
-            <button className="start-button animate-neonPulse">
+            <button className="start-button buttonFadeIn">
               TPP
             </button>
           </div>
