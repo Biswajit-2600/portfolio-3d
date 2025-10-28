@@ -7,7 +7,6 @@ function App() {
 
   return (
     <div className="h-screen w-screen flex flex-col items-center justify-center bg-gray-900 gap-12">
-      <h1 className="text-6xl neonPulse">My 3D Portfolio</h1>
 
       {/* 3D Canvas */}
       <div className="w-96 h-96">
