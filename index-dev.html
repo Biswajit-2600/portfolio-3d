@@ -10,8 +10,55 @@
     <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Portfolio - My World</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Lottie Player -->
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="/styles/global.css">
   </head>
   <body>
+    <div class="construction-container">
+      <div class="content-wrapper">
+        <div class="construction-text">
+          <!-- Desktop Content -->
+          <div class="desktop-content">
+            <h1 class="main-title">SITE UNDER CONSTRUCTION</h1>
+            <p class="sub-title">Building something amazing...</p>
+            <div class="coming-soon">Coming Soon</div>
+            
+            <div class="visit-text">In the meantime, take a peek at what I've built so far:</div>
+            <a href="https://m-biswajit-me.vercel.app/" target="_blank" class="visit-link">
+              🌐 Visit Website
+            </a>
+          </div>
+          
+          <!-- Mobile Content - Completely Different -->
+          <div class="mobile-content">
+            <h1 class="main-title">BEST VIEWED ON DESKTOP</h1>
+            <p class="sub-title">This 3D portfolio experience is optimized for larger screens</p>
+            <div class="coming-soon-static">Mobile Version Available</div>
+            
+            <div class="visit-text">For the best experience, visit our mobile-friendly version:</div>
+            <a href="https://m-biswajit-me.vercel.app/" target="_blank" class="visit-link">
+              📱 View Lighter Version
+            </a>
+          </div>
+        </div>
+        
+        <div class="animation-wrapper">
+          <dotlottie-player
+            src="public/assets/website-under-construction.lottie"
+            background="transparent"
+            speed="1"
+            style="width: 100%; height: 100%;"
+            loop
+            autoplay>
+          </dotlottie-player>
+        </div>
+      </div>
+    </div>
+    
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
