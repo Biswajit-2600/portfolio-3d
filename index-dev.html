@@ -12,54 +12,53 @@
     <title>Portfolio - My World</title>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="/public/styles/global.css">
+    <!-- Page-specific CSS -->
+    <link rel="stylesheet" href="/public/styles/index-dev.css">
+    <!-- Three.js for 3D effects -->
+    <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
     <!-- Lottie Player -->
     <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
-    <!-- Global CSS -->
-    <link rel="stylesheet" href="/styles/global.css">
   </head>
   <body>
-    <div class="construction-container">
+    <div class="experience-container">
       <div class="content-wrapper">
-        <div class="construction-text">
-          <!-- Desktop Content -->
-          <div class="desktop-content">
-            <h1 class="main-title">SITE UNDER CONSTRUCTION</h1>
-            <p class="sub-title">Building something amazing...</p>
-            <div class="coming-soon">Coming Soon</div>
-            
-            <div class="visit-text">In the meantime, take a peek at what I've built so far:</div>
-            <a href="https://m-biswajit-me.vercel.app/" target="_blank" class="visit-link">
-              🌐 Visit Website
-            </a>
-          </div>
-          
-          <!-- Mobile Content - Completely Different -->
-          <div class="mobile-content">
-            <h1 class="main-title">BEST VIEWED ON DESKTOP</h1>
-            <p class="sub-title">This 3D portfolio experience is optimized for larger screens</p>
-            <div class="coming-soon-static">Mobile Version Available</div>
-            
-            <div class="visit-text">Try our mobile version for a better experience:</div>
-            <a href="https://m-biswajit-me.vercel.app/" target="_blank" class="visit-link">
-              📱 View Mobile Version
-            </a>
-          </div>
+        <!-- Start Button Section -->
+        <div class="start-section">
+          <h1 class="main-title">MY WORLD</h1>
+          <p class="sub-title">3D Interactive Experience</p>
+          <a href="#" class="start-button" id="startExperience">
+            Start Experience
+          </a>
         </div>
-        
-        <div class="animation-wrapper">
-          <dotlottie-player
-            src="public/assets/website-under-construction.lottie"
-            background="transparent"
-            speed="1"
-            style="width: 100%; height: 100%;"
-            loop
-            autoplay>
-          </dotlottie-player>
+
+        <!-- Animation Section with Three.js -->
+        <div class="animation-section">
+          <div class="animation-container">
+            <canvas id="three-canvas" class="three-scene"></canvas>
+          </div>
         </div>
       </div>
     </div>
-    
+
+    <!-- Mobile Content (Shown on Mobile) -->
+    <div class="mobile-content">
+      <h1 class="main-title">BEST VIEWED<br>ON DESKTOP</h1>
+      <p class="sub-title">This 3D portfolio experience is optimized for larger screens</p>
+      <!-- Mobile: keep textual banner for contrast and clarity -->
+      <div class="coming-soon-static">Mobile Version Available</div>
+
+      <div class="visit-text">Try our mobile version for a better experience:</div>
+      <a href="https://m-biswajit-me.vercel.app/" target="_blank" class="visit-link">
+        📱 View Mobile Version
+      </a>
+    </div>
+
+    <!-- React App Container (Hidden initially) -->
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Include Three.js Script -->
+    <script src="/public/scripts/portfolio-3d.js"></script>
   </body>
 </html>
