@@ -784,12 +784,37 @@
       `;
       document.head.appendChild(style);
 
-      // Pull to refresh functionality with rotating loader
+      // Pull to refresh functionality with drag-following rotating icon
       let startY = 0;
       let isPulling = false;
       let refreshContainer = null;
+      let dragIcon = null;
+      let isDragging = false;
 
-      // Create rotating loader
+      // Create drag-following refresh icon
+      function createDragIcon() {
+        if (!dragIcon) {
+          dragIcon = document.createElement('div');
+          dragIcon.className = 'drag-refresh-icon';
+          dragIcon.innerHTML = '↻';
+          dragIcon.style.cssText = `
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            font-size: 24px;
+            color: #3498db;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            display: none;
+          `;
+          document.body.appendChild(dragIcon);
+        }
+        return dragIcon;
+      }
+
+      // Create rotating loader (for final refresh)
       function createRefreshLoader() {
         if (!refreshContainer) {
           refreshContainer = document.createElement('div');
@@ -832,6 +857,28 @@
         return refreshContainer;
       }
 
+      function showDragIcon() {
+        const icon = createDragIcon();
+        icon.style.display = 'block';
+        icon.style.opacity = '1';
+      }
+
+      function hideDragIcon() {
+        if (dragIcon) {
+          dragIcon.style.opacity = '0';
+          setTimeout(() => {
+            if (dragIcon) dragIcon.style.display = 'none';
+          }, 200);
+        }
+      }
+
+      function updateDragIconPosition(y, rotation) {
+        if (dragIcon) {
+          dragIcon.style.top = `${y - 30}px`; // Position above finger
+          dragIcon.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+        }
+      }
+
       function showRefresh() {
         const container = createRefreshLoader();
         const icon = container.querySelector('.refresh-icon');
@@ -839,38 +886,47 @@
         icon.style.display = 'inline-block';
       }
 
-      function hideRefresh() {
-        if (refreshContainer) {
-          const icon = refreshContainer.querySelector('.refresh-icon');
-          container.style.top = '-60px';
-          setTimeout(() => {
-            if (icon) icon.style.display = 'none';
-          }, 300);
-        }
-      }
-
       document.addEventListener('touchstart', function(e) {
         startY = e.touches[0].clientY;
         isPulling = window.scrollY === 0; // Only allow pull when at top
+        if (isPulling) {
+          showDragIcon();
+          isDragging = true;
+        }
       });
 
       document.addEventListener('touchmove', function(e) {
-        if (!isPulling) return;
+        if (!isDragging || !isPulling) return;
 
         const currentY = e.touches[0].clientY;
         const diff = currentY - startY;
 
-        if (diff > 80) { // Pull down more than 80px
+        if (diff > 0) { // Only show when pulling down
+          const dragDistance = Math.min(diff, 120); // Limit max drag
+          const rotation = (dragDistance / 120) * 360; // Rotate based on drag distance
+          updateDragIconPosition(currentY, rotation);
+        }
+      });
+
+      document.addEventListener('touchend', function(e) {
+        if (!isDragging) return;
+
+        const endY = e.changedTouches[0].clientY;
+        const diff = endY - startY;
+
+        if (diff > 80) { // If pulled far enough, refresh
+          hideDragIcon();
           showRefresh();
           // Refresh the page after showing the loader
           setTimeout(() => {
             window.location.reload();
           }, 500);
+        } else {
+          // Not pulled far enough, just hide the drag icon
+          hideDragIcon();
         }
-      });
 
-      document.addEventListener('touchend', function(e) {
-        hideRefresh();
+        isDragging = false;
         isPulling = false;
       });
     </script>
