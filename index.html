@@ -802,12 +802,13 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 10000;
-            font-size: 24px;
-            color: #3498db;
+            font-size: 32px;
+            color: #ffffff;
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.2s ease;
             display: none;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
           `;
           document.body.appendChild(dragIcon);
         }
@@ -872,9 +873,15 @@
         }
       }
 
-      function updateDragIconPosition(y, rotation) {
+      function updateDragIconPosition(currentY, rotation) {
         if (dragIcon) {
-          dragIcon.style.top = `${y - 30}px`; // Position above finger
+          const diff = currentY - startY;
+          // Limit the icon movement to maximum 120px from start position
+          const maxDragDistance = 120;
+          const limitedDiff = Math.min(diff, maxDragDistance);
+          const iconY = startY + limitedDiff - 30; // Position above the limited drag point
+          
+          dragIcon.style.top = `${iconY}px`;
           dragIcon.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
         }
       }
