@@ -213,8 +213,8 @@
       let isDragging = false;
       let isRefreshing = false;
       let currentPull = 0;
-      const maxPull = 100;
-      const triggerDistance = 60;
+      const maxPull = 50;
+      const triggerDistance = 20;
 
       function onTouchStart(e) {
         if (!refreshContainer || !icon) return;
@@ -234,7 +234,7 @@
           e.preventDefault();
           const progress = pullDistance / maxPull;
           // Move less during drag so icon stays closer to top
-          refreshContainer.style.transform = `translateY(${pullDistance * 0.3}px)`;
+          refreshContainer.style.transform = `translateY(${pullDistance * 0.1}px)`;
             icon.style.opacity = 1;
           icon.style.transform = `rotate(${progress * 180}deg)`;
         }

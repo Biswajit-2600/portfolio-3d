@@ -1423,7 +1423,7 @@
           const progress = pullDistance / maxPull;
           // Move container proportionally (less than actual drag)
           // Move less during drag so icon stays closer to top
-          refreshContainer.style.transform = `translateY(${pullDistance * 0.1}px)`;
+          refreshContainer.style.transform = `translateY(${pullDistance * 0.01}px)`;
           // Show & rotate icon smoothly up to 180deg
           icon.style.opacity = 1;
           icon.style.transform = `rotate(${progress * 180}deg)`;
