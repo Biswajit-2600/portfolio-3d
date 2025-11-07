@@ -224,30 +224,33 @@
       /* Mobile layout – forces mobile design even in desktop mode */
       @media screen and (max-device-width: 768px) {
         body {
-          background-color: #fafafa;
+          /* retain existing gradient but example mobile override kept minimal */
           font-size: 16px;
         }
-        .desktop-layout {
+        .desktop-content {
           display: none !important;
         }
-        .mobile-layout {
-          display: block !important;
+        .mobile-content {
+          display: flex !important;
         }
       }
 
       /* Optional – desktop layout */
       @media screen and (min-device-width: 769px) {
-        .mobile-layout {
+        .mobile-content {
           display: none;
+        }
+        .desktop-content {
+          display: block;
         }
       }
 
       /* Extra strength: .force-mobile class for JS enforcement */
-      .force-mobile .desktop-layout {
+      .force-mobile .desktop-content {
         display: none !important;
       }
-      .force-mobile .mobile-layout {
-        display: block !important;
+      .force-mobile .mobile-content {
+        display: flex !important;
       }
 
       .animation-wrapper {
@@ -837,8 +840,8 @@
         display: none !important;
       }
       
-      /* CSS-only enforcement for real device dimensions */
-      @media screen and (max-device-width: 1024px) {
+      /* CSS-only enforcement for real device dimensions - tightened to 768px */
+      @media screen and (max-device-width: 768px) {
         .desktop-content {
           display: none !important;
         }
