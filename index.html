@@ -66,7 +66,9 @@
           #533483 100%
         );
         min-height: 100vh;
-        overflow: hidden;
+        /* Allow vertical scroll so pull-to-refresh can detect top position */
+        overflow-y: auto;
+        overflow-x: hidden;
         position: relative;
       }
 
@@ -645,7 +647,8 @@
         justify-content: center;
         align-items: flex-end;
         pointer-events: none;
-        z-index: 10;
+        /* Above construction container (z-index:1000) */
+        z-index: 2001;
         transform: translateY(-100%);
         transition: transform 0.3s ease;
       }
@@ -1394,56 +1397,61 @@
       let startY = 0;
       let isDragging = false;
       let isRefreshing = false;
+      let currentPull = 0; // track current pull distance explicitly
       const maxPull = 100; // maximum pull distance
+      const triggerDistance = 60; // distance required to trigger refresh
 
-      window.addEventListener('touchstart', (e) => {
-        if (window.scrollY === 0 && !isRefreshing) {
+      function onTouchStart(e) {
+        if (!refreshContainer || !icon) return;
+        // Only start if at top and not already refreshing
+        if (window.scrollY <= 0 && !isRefreshing) {
           startY = e.touches[0].clientY;
+          currentPull = 0;
           isDragging = true;
         }
-      });
+      }
 
-      window.addEventListener('touchmove', (e) => {
-        if (!isDragging) return;
+      function onTouchMove(e) {
+        if (!isDragging || !refreshContainer || !icon) return;
         const currentY = e.touches[0].clientY;
-        const pullDistance = Math.min(currentY - startY, maxPull);
+        const pullDistance = Math.min(Math.max(currentY - startY, 0), maxPull);
+        currentPull = pullDistance;
 
         if (pullDistance > 0) {
-          e.preventDefault(); // prevent native scroll
+          // Need passive:false to allow preventDefault on mobile browsers
+          e.preventDefault();
           const progress = pullDistance / maxPull;
-
-          // move icon slightly
+          // Move container proportionally (less than actual drag)
           refreshContainer.style.transform = `translateY(${pullDistance * 0.6}px)`;
-
-          // rotate icon based on drag amount
+          // Show & rotate icon smoothly up to 180deg
           icon.style.opacity = 1;
           icon.style.transform = `rotate(${progress * 180}deg)`;
         }
-      });
+      }
 
-      window.addEventListener('touchend', () => {
-        if (!isDragging) return;
+      function onTouchEnd() {
+        if (!isDragging || !refreshContainer || !icon) return;
         isDragging = false;
-
-        const pulledEnough = parseFloat(refreshContainer.style.transform.match(/[\d.]+/)) > 50;
-
-        if (pulledEnough) {
+        // Decide based on tracked currentPull, not parsing style
+        if (currentPull >= triggerDistance) {
           startRefresh();
         } else {
           resetPull();
         }
-      });
+      }
 
       function startRefresh() {
+        if (isRefreshing) return;
         isRefreshing = true;
         refreshContainer.classList.add('refreshing');
-        refreshContainer.style.transform = `translateY(40px)`; // stays visible during refresh
-
-        // simulate refresh action (your existing loader can start here)
+        // Keep container partially visible
+        refreshContainer.style.transform = 'translateY(40px)';
+        icon.style.opacity = 1;
+        // Simulate async refresh
         setTimeout(() => {
           stopRefresh();
-          window.location.reload(); // or your custom reload logic
-        }, 2000);
+          window.location.reload();
+        }, 1200); // slightly faster
       }
 
       function stopRefresh() {
@@ -1453,9 +1461,16 @@
       }
 
       function resetPull() {
-        refreshContainer.style.transform = `translateY(-100%)`;
+        currentPull = 0;
+        refreshContainer.style.transform = 'translateY(-100%)';
         icon.style.opacity = 0;
+        icon.style.transform = 'rotate(0deg)';
       }
+
+      // Register listeners with passive:false for touchmove
+      window.addEventListener('touchstart', onTouchStart, { passive: true });
+      window.addEventListener('touchmove', onTouchMove, { passive: false });
+      window.addEventListener('touchend', onTouchEnd, { passive: true });
     </script>
   </body>
 </html>

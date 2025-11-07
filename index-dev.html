@@ -94,7 +94,8 @@
         justify-content: center;
         align-items: flex-end;
         pointer-events: none;
-        z-index: 10;
+        /* Above any page chrome */
+        z-index: 2001;
         transform: translateY(-100%);
         transition: transform 0.3s ease;
       }
@@ -204,63 +205,60 @@
       // Check periodically for user agent changes
       setInterval(detectAndForceMobile, 500);
 
-      // Pull to refresh functionality for mobile drag-to-refresh
+      // Pull to refresh functionality (improved)
       const refreshContainer = document.querySelector('.pull-to-refresh');
       const icon = document.querySelector('.refresh-icon');
 
       let startY = 0;
       let isDragging = false;
       let isRefreshing = false;
-      const maxPull = 100; // maximum pull distance
+      let currentPull = 0;
+      const maxPull = 100;
+      const triggerDistance = 60;
 
-      window.addEventListener('touchstart', (e) => {
-        if (window.scrollY === 0 && !isRefreshing) {
+      function onTouchStart(e) {
+        if (!refreshContainer || !icon) return;
+        if (window.scrollY <= 0 && !isRefreshing) {
           startY = e.touches[0].clientY;
+          currentPull = 0;
           isDragging = true;
         }
-      });
+      }
 
-      window.addEventListener('touchmove', (e) => {
-        if (!isDragging) return;
+      function onTouchMove(e) {
+        if (!isDragging || !refreshContainer || !icon) return;
         const currentY = e.touches[0].clientY;
-        const pullDistance = Math.min(currentY - startY, maxPull);
-
+        const pullDistance = Math.min(Math.max(currentY - startY, 0), maxPull);
+        currentPull = pullDistance;
         if (pullDistance > 0) {
-          e.preventDefault(); // prevent native scroll
+          e.preventDefault();
           const progress = pullDistance / maxPull;
-
-          // move icon slightly
           refreshContainer.style.transform = `translateY(${pullDistance * 0.6}px)`;
-
-          // rotate icon based on drag amount
-          icon.style.opacity = 1;
+            icon.style.opacity = 1;
           icon.style.transform = `rotate(${progress * 180}deg)`;
         }
-      });
+      }
 
-      window.addEventListener('touchend', () => {
-        if (!isDragging) return;
+      function onTouchEnd() {
+        if (!isDragging || !refreshContainer || !icon) return;
         isDragging = false;
-
-        const pulledEnough = parseFloat(refreshContainer.style.transform.match(/[\d.]+/)) > 50;
-
-        if (pulledEnough) {
+        if (currentPull >= triggerDistance) {
           startRefresh();
         } else {
           resetPull();
         }
-      });
+      }
 
       function startRefresh() {
+        if (isRefreshing) return;
         isRefreshing = true;
         refreshContainer.classList.add('refreshing');
-        refreshContainer.style.transform = `translateY(40px)`; // stays visible during refresh
-
-        // simulate refresh action (your existing loader can start here)
+        refreshContainer.style.transform = 'translateY(40px)';
+        icon.style.opacity = 1;
         setTimeout(() => {
           stopRefresh();
-          window.location.reload(); // or your custom reload logic
-        }, 2000);
+          window.location.reload();
+        }, 1200);
       }
 
       function stopRefresh() {
@@ -270,9 +268,15 @@
       }
 
       function resetPull() {
-        refreshContainer.style.transform = `translateY(-100%)`;
+        currentPull = 0;
+        refreshContainer.style.transform = 'translateY(-100%)';
         icon.style.opacity = 0;
+        icon.style.transform = 'rotate(0deg)';
       }
+
+      window.addEventListener('touchstart', onTouchStart, { passive: true });
+      window.addEventListener('touchmove', onTouchMove, { passive: false });
+      window.addEventListener('touchend', onTouchEnd, { passive: true });
     </script>
   </body>
 </html>
