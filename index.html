@@ -1422,8 +1422,8 @@
           e.preventDefault();
           const progress = pullDistance / maxPull;
           // Move container proportionally (less than actual drag)
-          // Move less during drag so icon stays closer to top
-          refreshContainer.style.transform = `translateY(${pullDistance * 0.01}px)`;
+          // Move even less during drag so icon stays very close to top
+          refreshContainer.style.transform = `translateY(${pullDistance * 0.12}px)`;
           // Show & rotate icon smoothly up to 180deg
           icon.style.opacity = 1;
           icon.style.transform = `rotate(${progress * 180}deg)`;
@@ -1446,8 +1446,8 @@
         isRefreshing = true;
         refreshContainer.classList.add('refreshing');
         // Keep container partially visible
-  // Keep icon close to top during refresh
-  refreshContainer.style.transform = 'translateY(18px)';
+  // Keep icon very close to top during refresh
+  refreshContainer.style.transform = 'translateY(6px)';
         icon.style.opacity = 1;
         // Simulate async refresh
         setTimeout(() => {

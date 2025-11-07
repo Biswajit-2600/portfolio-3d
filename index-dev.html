@@ -233,8 +233,8 @@
         if (pullDistance > 0) {
           e.preventDefault();
           const progress = pullDistance / maxPull;
-          // Move less during drag so icon stays closer to top
-          refreshContainer.style.transform = `translateY(${pullDistance * 0.1}px)`;
+          // Move even less during drag so icon stays very close to top
+          refreshContainer.style.transform = `translateY(${pullDistance * 0.12}px)`;
             icon.style.opacity = 1;
           icon.style.transform = `rotate(${progress * 180}deg)`;
         }
@@ -254,8 +254,8 @@
         if (isRefreshing) return;
         isRefreshing = true;
         refreshContainer.classList.add('refreshing');
-  // Keep icon close to top during refresh
-  refreshContainer.style.transform = 'translateY(18px)';
+  // Keep icon very close to top during refresh
+  refreshContainer.style.transform = 'translateY(6px)';
         icon.style.opacity = 1;
         setTimeout(() => {
           stopRefresh();
