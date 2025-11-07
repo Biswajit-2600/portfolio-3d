@@ -245,11 +245,11 @@
 
       .animation-wrapper {
         position: absolute;
-        right: 15%;
-        top: 55%;
+        right: 12%;
+        top: 50%;
         transform: translateY(-50%);
-        width: clamp(350px, 45vw, 700px);
-        height: clamp(350px, 45vw, 700px);
+        width: clamp(450px, 50vw, 800px);
+        height: clamp(450px, 50vw, 800px);
         filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
       }
 
@@ -288,10 +288,10 @@
           max-width: 700px;
         }
         .animation-wrapper {
-          right: 12%;
-          top: 58%;
-          width: 750px;
-          height: 750px;
+          right: 8%;
+          top: 50%;
+          width: 900px;
+          height: 900px;
         }
       }
 
@@ -302,10 +302,10 @@
           max-width: 550px;
         }
         .animation-wrapper {
-          right: 10%;
-          top: 56%;
-          width: 550px;
-          height: 550px;
+          right: 6%;
+          top: 50%;
+          width: 700px;
+          height: 700px;
         }
       }
 
@@ -431,8 +431,8 @@
           left: 0;
           width: 100%;
           height: 100vh;
-          /* leave extra bottom padding for the mobile lottie - increased for larger animation */
-          padding: 1.2rem 1rem 8.5rem;
+          /* Adjusted padding for larger mobile animation */
+          padding: 0.8rem 1rem 4rem;
           box-sizing: border-box;
           overflow: hidden;
           background: linear-gradient(
@@ -535,8 +535,8 @@
           left: 0;
           width: 100%;
           height: 100vh;
-          /* leave extra bottom padding for the mobile lottie - reduced since animation is now in flow */
-          padding: 1rem 0.5rem 2rem;
+          /* Reduced top padding and increased bottom padding for larger animation */
+          padding: 0.5rem 0.5rem 3rem;
           box-sizing: border-box;
           overflow: hidden;
           background: linear-gradient(
@@ -676,14 +676,14 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                margin-bottom: 1.5rem;
+                margin-bottom: 2rem;
                 pointer-events: none;
               "
             >
-              <div style="width: 320px; height: 160px; opacity: 0.98">
+              <div style="width: 350px; height: 160px; opacity: 1;">
                 <dotlottie-wc
-                  src="/assets/website-under-construction-mobile.json"
-                  style="width: 100%; height: 100%"
+                  src="public/assets/website-under-construction-mobile.json"
+                  style="width: 100%; height: 280px; margin-top: -40px;"
                   autoplay
                   loop
                 ></dotlottie-wc>
@@ -696,7 +696,7 @@
               style="display: inline-block; margin-bottom: 1.6rem"
             >
               <dotlottie-wc
-                src="/assets/coming-soon.json"
+                src="public/assets/coming-soon.json"
                 style="width: 160px; height: 80px"
                 autoplay
                 loop
@@ -784,32 +784,84 @@
       `;
       document.head.appendChild(style);
 
-      // Pull to refresh functionality for mobile with visual indicator
+      // Pull to refresh functionality for mobile with enhanced visual indicator
       let startY = 0;
       let isPulling = false;
       let refreshIndicator = null;
+      let refreshSpinner = null;
 
-      // Create refresh indicator
+      // Create modern refresh indicator
       function createRefreshIndicator() {
         if (!refreshIndicator) {
           refreshIndicator = document.createElement('div');
-          refreshIndicator.innerHTML = '🔄';
+          refreshIndicator.innerHTML = `
+            <div class="refresh-spinner">
+              <div class="spinner-ring"></div>
+              <div class="spinner-center">⬇</div>
+            </div>
+          `;
           refreshIndicator.style.cssText = `
             position: fixed;
-            top: -50px;
+            top: -80px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 25px;
-            padding: 10px 15px;
-            font-size: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 240, 255, 0.9));
+            border: 2px solid rgba(126, 244, 211, 0.4);
+            border-radius: 50px;
+            padding: 15px 20px;
+            font-size: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), 0 0 20px rgba(126, 244, 211, 0.1);
+            backdrop-filter: blur(15px);
             z-index: 10000;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             opacity: 0;
             pointer-events: none;
+            min-width: 80px;
+            text-align: center;
           `;
+
+          // Add CSS for spinner animation
+          const style = document.createElement('style');
+          style.textContent = `
+            .refresh-spinner {
+              position: relative;
+              width: 40px;
+              height: 40px;
+              margin: 0 auto;
+            }
+            .spinner-ring {
+              position: absolute;
+              width: 100%;
+              height: 100%;
+              border: 3px solid transparent;
+              border-top: 3px solid #7ef4d3;
+              border-radius: 50%;
+              transition: transform 0.3s ease;
+            }
+            .spinner-center {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              font-size: 16px;
+              transition: all 0.3s ease;
+            }
+            @keyframes refreshSpin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+            @keyframes refreshPulse {
+              0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+              50% { transform: scale(1.1) rotate(180deg); opacity: 0.8; }
+            }
+            .refresh-complete {
+              animation: refreshPulse 0.6s ease-in-out;
+            }
+            .refresh-spinning .spinner-ring {
+              animation: refreshSpin 1s linear infinite;
+            }
+          `;
+          document.head.appendChild(style);
           document.body.appendChild(refreshIndicator);
         }
         return refreshIndicator;
@@ -826,35 +878,89 @@
         const currentY = e.touches[0].clientY;
         const diff = currentY - startY;
 
-        if (diff > 50) { // Start showing indicator at 50px
+        if (diff > 30) { // Start showing indicator at 30px
           const indicator = createRefreshIndicator();
-          const progress = Math.min((diff - 50) / 50, 1); // Progress from 50px to 100px
+          const maxPull = 120;
+          const progress = Math.min(diff / maxPull, 1);
           
-          indicator.style.top = `${-50 + (progress * 70)}px`; // Move from -50px to 20px
-          indicator.style.opacity = progress;
-          indicator.style.transform = `translateX(-50%) rotate(${progress * 360}deg)`;
+          // Smooth indicator movement
+          indicator.style.top = `${-80 + (progress * 100)}px`; // Move from -80px to 20px
+          indicator.style.opacity = Math.min(progress * 2, 1);
+          indicator.style.transform = `translateX(-50%) scale(${0.8 + (progress * 0.3)})`;
 
-          if (diff > 100) { // Pull down more than 100px
-            indicator.innerHTML = '✅';
-            indicator.style.background = 'rgba(76, 175, 80, 0.9)';
-            indicator.style.color = 'white';
+          const spinner = indicator.querySelector('.spinner-ring');
+          const center = indicator.querySelector('.spinner-center');
+          
+          // Rotate ring based on pull progress
+          if (spinner) {
+            spinner.style.transform = `rotate(${progress * 360}deg)`;
+          }
+
+          // Change arrow direction and color based on progress
+          if (center) {
+            if (progress >= 0.8) {
+              center.innerHTML = '✓';
+              center.style.color = '#4CAF50';
+              center.style.fontSize = '18px';
+              indicator.style.background = 'linear-gradient(135deg, rgba(76, 175, 80, 0.95), rgba(129, 199, 132, 0.9))';
+              indicator.style.borderColor = 'rgba(76, 175, 80, 0.6)';
+            } else if (progress >= 0.5) {
+              center.innerHTML = '↻';
+              center.style.color = '#7ef4d3';
+              center.style.fontSize = '16px';
+            } else {
+              center.innerHTML = '⬇';
+              center.style.color = '#666';
+              center.style.fontSize = '16px';
+            }
+          }
+
+          if (diff > maxPull) { // Pull down more than 120px
+            // Add completion animation
+            indicator.classList.add('refresh-complete');
             
-            // Refresh the page after a short delay to show completion
+            // Trigger refresh with enhanced animation
             setTimeout(() => {
-              window.location.reload();
-            }, 200);
+              indicator.classList.add('refresh-spinning');
+              indicator.querySelector('.spinner-center').innerHTML = '↻';
+              
+              // Show loading state briefly before refresh
+              setTimeout(() => {
+                window.location.reload();
+              }, 400);
+            }, 100);
           }
         }
       });
 
       document.addEventListener('touchend', function(e) {
         if (refreshIndicator) {
-          refreshIndicator.style.top = '-50px';
+          // Smooth hide animation
+          refreshIndicator.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+          refreshIndicator.style.top = '-80px';
           refreshIndicator.style.opacity = '0';
-          refreshIndicator.innerHTML = '🔄';
-          refreshIndicator.style.background = 'rgba(255, 255, 255, 0.9)';
-          refreshIndicator.style.color = 'black';
-          refreshIndicator.style.transform = 'translateX(-50%) rotate(0deg)';
+          refreshIndicator.style.transform = 'translateX(-50%) scale(0.8)';
+          
+          // Reset after animation
+          setTimeout(() => {
+            if (refreshIndicator) {
+              refreshIndicator.classList.remove('refresh-complete', 'refresh-spinning');
+              refreshIndicator.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 240, 255, 0.9))';
+              refreshIndicator.style.borderColor = 'rgba(126, 244, 211, 0.4)';
+              
+              const center = refreshIndicator.querySelector('.spinner-center');
+              if (center) {
+                center.innerHTML = '⬇';
+                center.style.color = '#666';
+                center.style.fontSize = '16px';
+              }
+              
+              const spinner = refreshIndicator.querySelector('.spinner-ring');
+              if (spinner) {
+                spinner.style.transform = 'rotate(0deg)';
+              }
+            }
+          }, 500);
         }
         isPulling = false;
       });
