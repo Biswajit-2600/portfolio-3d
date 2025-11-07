@@ -204,7 +204,7 @@
       // Check periodically for user agent changes
       setInterval(detectAndForceMobile, 500);
 
-      // Pull to refresh functionality
+      // Pull to refresh functionality for mobile drag-to-refresh
       const refreshContainer = document.querySelector('.pull-to-refresh');
       const icon = document.querySelector('.refresh-icon');
 
@@ -273,7 +273,6 @@
         refreshContainer.style.transform = `translateY(-100%)`;
         icon.style.opacity = 0;
       }
-    </script>
     </script>
   </body>
 </html>
