@@ -24,8 +24,8 @@
     
     <!-- Force mobile layout script - must run before styles -->
     <script>
-      // Force mobile layout even if user selects desktop mode
-      const isSmallScreen = Math.min(window.screen.width, window.innerWidth) <= 1024;
+      // Enforce mobile layout based on physical device width, not user agent or viewport
+      const isSmallScreen = Math.min(window.screen.width, window.innerWidth) <= 768;
       if (isSmallScreen) {
         document.documentElement.classList.add('force-mobile');
       }
@@ -221,28 +221,33 @@
         display: block;
       }
 
-      /* Force mobile layout using device screen detection */
-      .force-mobile .desktop-content {
-        display: none !important;
-      }
-      .force-mobile .mobile-content {
-        display: flex !important;
-      }
-      .force-mobile .animation-wrapper {
-        display: none !important;
-      }
-      
-      /* CSS-only enforcement for real device dimensions */
-      @media screen and (max-device-width: 1024px) {
-        .desktop-content {
+      /* Mobile layout – forces mobile design even in desktop mode */
+      @media screen and (max-device-width: 768px) {
+        body {
+          background-color: #fafafa;
+          font-size: 16px;
+        }
+        .desktop-layout {
           display: none !important;
         }
-        .mobile-content {
-          display: flex !important;
+        .mobile-layout {
+          display: block !important;
         }
-        .animation-wrapper {
-          display: none !important;
+      }
+
+      /* Optional – desktop layout */
+      @media screen and (min-device-width: 769px) {
+        .mobile-layout {
+          display: none;
         }
+      }
+
+      /* Extra strength: .force-mobile class for JS enforcement */
+      .force-mobile .desktop-layout {
+        display: none !important;
+      }
+      .force-mobile .mobile-layout {
+        display: block !important;
       }
 
       .animation-wrapper {
