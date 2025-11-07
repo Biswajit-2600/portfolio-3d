@@ -21,6 +21,15 @@
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Portfolio - My World</title>
+    
+    <!-- Force mobile layout script - must run before styles -->
+    <script>
+      // Force mobile layout even if user selects desktop mode
+      const isSmallScreen = Math.min(window.screen.width, window.innerWidth) <= 1024;
+      if (isSmallScreen) {
+        document.documentElement.classList.add('force-mobile');
+      }
+    </script>
     <!-- Google Fonts -->
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap"
@@ -208,6 +217,30 @@
 
       .desktop-content {
         display: block;
+      }
+
+      /* Force mobile layout using device screen detection */
+      .force-mobile .desktop-content {
+        display: none !important;
+      }
+      .force-mobile .mobile-content {
+        display: flex !important;
+      }
+      .force-mobile .animation-wrapper {
+        display: none !important;
+      }
+      
+      /* CSS-only enforcement for real device dimensions */
+      @media screen and (max-device-width: 1024px) {
+        .desktop-content {
+          display: none !important;
+        }
+        .mobile-content {
+          display: flex !important;
+        }
+        .animation-wrapper {
+          display: none !important;
+        }
       }
 
       .animation-wrapper {
@@ -751,9 +784,36 @@
       `;
       document.head.appendChild(style);
 
-      // Pull to refresh functionality for mobile
+      // Pull to refresh functionality for mobile with visual indicator
       let startY = 0;
       let isPulling = false;
+      let refreshIndicator = null;
+
+      // Create refresh indicator
+      function createRefreshIndicator() {
+        if (!refreshIndicator) {
+          refreshIndicator = document.createElement('div');
+          refreshIndicator.innerHTML = '🔄';
+          refreshIndicator.style.cssText = `
+            position: fixed;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 25px;
+            padding: 10px 15px;
+            font-size: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            transition: all 0.3s ease;
+            opacity: 0;
+            pointer-events: none;
+          `;
+          document.body.appendChild(refreshIndicator);
+        }
+        return refreshIndicator;
+      }
 
       document.addEventListener('touchstart', function(e) {
         startY = e.touches[0].clientY;
@@ -766,10 +826,37 @@
         const currentY = e.touches[0].clientY;
         const diff = currentY - startY;
 
-        if (diff > 100) { // Pull down more than 100px
-          // Refresh the page
-          window.location.reload();
+        if (diff > 50) { // Start showing indicator at 50px
+          const indicator = createRefreshIndicator();
+          const progress = Math.min((diff - 50) / 50, 1); // Progress from 50px to 100px
+          
+          indicator.style.top = `${-50 + (progress * 70)}px`; // Move from -50px to 20px
+          indicator.style.opacity = progress;
+          indicator.style.transform = `translateX(-50%) rotate(${progress * 360}deg)`;
+
+          if (diff > 100) { // Pull down more than 100px
+            indicator.innerHTML = '✅';
+            indicator.style.background = 'rgba(76, 175, 80, 0.9)';
+            indicator.style.color = 'white';
+            
+            // Refresh the page after a short delay to show completion
+            setTimeout(() => {
+              window.location.reload();
+            }, 200);
+          }
         }
+      });
+
+      document.addEventListener('touchend', function(e) {
+        if (refreshIndicator) {
+          refreshIndicator.style.top = '-50px';
+          refreshIndicator.style.opacity = '0';
+          refreshIndicator.innerHTML = '🔄';
+          refreshIndicator.style.background = 'rgba(255, 255, 255, 0.9)';
+          refreshIndicator.style.color = 'black';
+          refreshIndicator.style.transform = 'translateX(-50%) rotate(0deg)';
+        }
+        isPulling = false;
       });
     </script>
   </body>
