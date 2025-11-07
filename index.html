@@ -1398,8 +1398,8 @@
       let isDragging = false;
       let isRefreshing = false;
       let currentPull = 0; // track current pull distance explicitly
-      const maxPull = 100; // maximum pull distance
-      const triggerDistance = 60; // distance required to trigger refresh
+      const maxPull = 50; // maximum pull distance
+      const triggerDistance = 20; // distance required to trigger refresh
 
       function onTouchStart(e) {
         if (!refreshContainer || !icon) return;
