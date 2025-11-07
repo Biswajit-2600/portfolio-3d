@@ -49,26 +49,41 @@
       type="module"
     ></script>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+      /* Pull to refresh styles */
+      .pull-to-refresh {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 80px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        pointer-events: none;
+        z-index: 10;
+        transform: translateY(-100%);
+        transition: transform 0.3s ease;
       }
 
-      body {
-        font-family: "Poppins", sans-serif;
-        background: linear-gradient(
-          135deg,
-          #0a0a0a 0%,
-          #1a1a2e 25%,
-          #16213e 50%,
-          #0f3460 75%,
-          #533483 100%
-        );
-        min-height: 100vh;
-        overflow: hidden;
-        position: relative;
+      .refresh-icon {
+        width: 28px;
+        height: 28px;
+        border: 3px solid #ccc;
+        border-top-color: #007bff;
+        border-radius: 50%;
+        transform: rotate(0deg);
+        opacity: 0;
       }
+
+      .refreshing .refresh-icon {
+        animation: spin 1s linear infinite;
+        opacity: 1;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
 
       .construction-container {
         position: fixed;
@@ -636,6 +651,10 @@
     </style>
   </head>
   <body>
+    <!-- Pull to refresh container -->
+    <div class="pull-to-refresh">
+      <div class="refresh-icon"></div>
+    </div>
     <div class="construction-container">
       <div class="content-wrapper">
         <div class="construction-text">
@@ -784,158 +803,75 @@
       `;
       document.head.appendChild(style);
 
-      // Pull to refresh functionality with drag-following rotating icon
+      // Pull to refresh functionality
+      const refreshContainer = document.querySelector('.pull-to-refresh');
+      const icon = document.querySelector('.refresh-icon');
+
       let startY = 0;
-      let isPulling = false;
-      let refreshContainer = null;
-      let dragIcon = null;
       let isDragging = false;
+      let isRefreshing = false;
+      const maxPull = 100; // maximum pull distance
 
-      // Create drag-following refresh icon
-      function createDragIcon() {
-        if (!dragIcon) {
-          dragIcon = document.createElement('div');
-          dragIcon.className = 'drag-refresh-icon';
-          dragIcon.innerHTML = '↻';
-          dragIcon.style.cssText = `
-            position: fixed;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10000;
-            font-size: 32px;
-            color: #ffffff;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            display: none;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-          `;
-          document.body.appendChild(dragIcon);
-        }
-        return dragIcon;
-      }
-
-      // Create rotating loader (for final refresh)
-      function createRefreshLoader() {
-        if (!refreshContainer) {
-          refreshContainer = document.createElement('div');
-          refreshContainer.className = 'refresh-container';
-          refreshContainer.innerHTML = '<div class="refresh-icon"></div>';
-          refreshContainer.style.cssText = `
-            position: fixed;
-            top: -60px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10000;
-            transition: top 0.3s ease;
-          `;
-
-          // Add CSS for the rotating loader
-          const style = document.createElement('style');
-          style.textContent = `
-            .refresh-container {
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              height: 60px;
-            }
-            .refresh-icon {
-              width: 24px;
-              height: 24px;
-              border: 3px solid #ccc;
-              border-top-color: #3498db;
-              border-radius: 50%;
-              animation: spin 1s linear infinite;
-              display: none;
-            }
-            @keyframes spin {
-              to { transform: rotate(360deg); }
-            }
-          `;
-          document.head.appendChild(style);
-          document.body.appendChild(refreshContainer);
-        }
-        return refreshContainer;
-      }
-
-      function showDragIcon() {
-        const icon = createDragIcon();
-        icon.style.display = 'block';
-        icon.style.opacity = '1';
-      }
-
-      function hideDragIcon() {
-        if (dragIcon) {
-          dragIcon.style.opacity = '0';
-          setTimeout(() => {
-            if (dragIcon) dragIcon.style.display = 'none';
-          }, 200);
-        }
-      }
-
-      function updateDragIconPosition(currentY, rotation) {
-        if (dragIcon) {
-          const diff = currentY - startY;
-          // Limit the icon movement to maximum 120px from start position
-          const maxDragDistance = 120;
-          const limitedDiff = Math.min(diff, maxDragDistance);
-          const iconY = startY + limitedDiff - 30; // Position above the limited drag point
-          
-          dragIcon.style.top = `${iconY}px`;
-          dragIcon.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
-        }
-      }
-
-      function showRefresh() {
-        const container = createRefreshLoader();
-        const icon = container.querySelector('.refresh-icon');
-        container.style.top = '20px';
-        icon.style.display = 'inline-block';
-      }
-
-      document.addEventListener('touchstart', function(e) {
-        startY = e.touches[0].clientY;
-        isPulling = window.scrollY === 0; // Only allow pull when at top
-        if (isPulling) {
-          showDragIcon();
+      window.addEventListener('touchstart', (e) => {
+        if (window.scrollY === 0 && !isRefreshing) {
+          startY = e.touches[0].clientY;
           isDragging = true;
         }
       });
 
-      document.addEventListener('touchmove', function(e) {
-        if (!isDragging || !isPulling) return;
-
-        const currentY = e.touches[0].clientY;
-        const diff = currentY - startY;
-
-        if (diff > 0) { // Only show when pulling down
-          const dragDistance = Math.min(diff, 120); // Limit max drag
-          const rotation = (dragDistance / 120) * 360; // Rotate based on drag distance
-          updateDragIconPosition(currentY, rotation);
-        }
-      });
-
-      document.addEventListener('touchend', function(e) {
+      window.addEventListener('touchmove', (e) => {
         if (!isDragging) return;
+        const currentY = e.touches[0].clientY;
+        const pullDistance = Math.min(currentY - startY, maxPull);
 
-        const endY = e.changedTouches[0].clientY;
-        const diff = endY - startY;
+        if (pullDistance > 0) {
+          e.preventDefault(); // prevent native scroll
+          const progress = pullDistance / maxPull;
 
-        if (diff > 80) { // If pulled far enough, refresh
-          hideDragIcon();
-          showRefresh();
-          // Refresh the page after showing the loader
-          setTimeout(() => {
-            window.location.reload();
-          }, 500);
-        } else {
-          // Not pulled far enough, just hide the drag icon
-          hideDragIcon();
+          // move icon slightly
+          refreshContainer.style.transform = `translateY(${pullDistance * 0.6}px)`;
+
+          // rotate icon based on drag amount
+          icon.style.opacity = 1;
+          icon.style.transform = `rotate(${progress * 180}deg)`;
         }
-
-        isDragging = false;
-        isPulling = false;
       });
+
+      window.addEventListener('touchend', () => {
+        if (!isDragging) return;
+        isDragging = false;
+
+        const pulledEnough = parseFloat(refreshContainer.style.transform.match(/[\d.]+/)) > 50;
+
+        if (pulledEnough) {
+          startRefresh();
+        } else {
+          resetPull();
+        }
+      });
+
+      function startRefresh() {
+        isRefreshing = true;
+        refreshContainer.classList.add('refreshing');
+        refreshContainer.style.transform = `translateY(40px)`; // stays visible during refresh
+
+        // simulate refresh action (your existing loader can start here)
+        setTimeout(() => {
+          stopRefresh();
+          window.location.reload(); // or your custom reload logic
+        }, 2000);
+      }
+
+      function stopRefresh() {
+        isRefreshing = false;
+        refreshContainer.classList.remove('refreshing');
+        resetPull();
+      }
+
+      function resetPull() {
+        refreshContainer.style.transform = `translateY(-100%)`;
+        icon.style.opacity = 0;
+      }
     </script>
     </script>
   </body>
