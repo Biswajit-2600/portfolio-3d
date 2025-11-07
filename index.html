@@ -784,87 +784,69 @@
       `;
       document.head.appendChild(style);
 
-      // Pull to refresh functionality for mobile with enhanced visual indicator
+      // Pull to refresh functionality with rotating loader
       let startY = 0;
       let isPulling = false;
-      let refreshIndicator = null;
-      let refreshSpinner = null;
+      let refreshContainer = null;
 
-      // Create modern refresh indicator
-      function createRefreshIndicator() {
-        if (!refreshIndicator) {
-          refreshIndicator = document.createElement('div');
-          refreshIndicator.innerHTML = `
-            <div class="refresh-spinner">
-              <div class="spinner-ring"></div>
-              <div class="spinner-center">⬇</div>
-            </div>
-          `;
-          refreshIndicator.style.cssText = `
+      // Create rotating loader
+      function createRefreshLoader() {
+        if (!refreshContainer) {
+          refreshContainer = document.createElement('div');
+          refreshContainer.className = 'refresh-container';
+          refreshContainer.innerHTML = '<div class="refresh-icon"></div>';
+          refreshContainer.style.cssText = `
             position: fixed;
-            top: -80px;
+            top: -60px;
             left: 50%;
             transform: translateX(-50%);
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 240, 255, 0.9));
-            border: 2px solid rgba(126, 244, 211, 0.4);
-            border-radius: 50px;
-            padding: 15px 20px;
-            font-size: 24px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), 0 0 20px rgba(126, 244, 211, 0.1);
-            backdrop-filter: blur(15px);
             z-index: 10000;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 0;
-            pointer-events: none;
-            min-width: 80px;
-            text-align: center;
+            transition: top 0.3s ease;
           `;
 
-          // Add CSS for spinner animation
+          // Add CSS for the rotating loader
           const style = document.createElement('style');
           style.textContent = `
-            .refresh-spinner {
-              position: relative;
-              width: 40px;
-              height: 40px;
-              margin: 0 auto;
+            .refresh-container {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              height: 60px;
             }
-            .spinner-ring {
-              position: absolute;
-              width: 100%;
-              height: 100%;
-              border: 3px solid transparent;
-              border-top: 3px solid #7ef4d3;
+            .refresh-icon {
+              width: 24px;
+              height: 24px;
+              border: 3px solid #ccc;
+              border-top-color: #3498db;
               border-radius: 50%;
-              transition: transform 0.3s ease;
+              animation: spin 1s linear infinite;
+              display: none;
             }
-            .spinner-center {
-              position: absolute;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
-              font-size: 16px;
-              transition: all 0.3s ease;
-            }
-            @keyframes refreshSpin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-            @keyframes refreshPulse {
-              0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
-              50% { transform: scale(1.1) rotate(180deg); opacity: 0.8; }
-            }
-            .refresh-complete {
-              animation: refreshPulse 0.6s ease-in-out;
-            }
-            .refresh-spinning .spinner-ring {
-              animation: refreshSpin 1s linear infinite;
+            @keyframes spin {
+              to { transform: rotate(360deg); }
             }
           `;
           document.head.appendChild(style);
-          document.body.appendChild(refreshIndicator);
+          document.body.appendChild(refreshContainer);
         }
-        return refreshIndicator;
+        return refreshContainer;
+      }
+
+      function showRefresh() {
+        const container = createRefreshLoader();
+        const icon = container.querySelector('.refresh-icon');
+        container.style.top = '20px';
+        icon.style.display = 'inline-block';
+      }
+
+      function hideRefresh() {
+        if (refreshContainer) {
+          const icon = refreshContainer.querySelector('.refresh-icon');
+          container.style.top = '-60px';
+          setTimeout(() => {
+            if (icon) icon.style.display = 'none';
+          }, 300);
+        }
       }
 
       document.addEventListener('touchstart', function(e) {
@@ -878,92 +860,20 @@
         const currentY = e.touches[0].clientY;
         const diff = currentY - startY;
 
-        if (diff > 30) { // Start showing indicator at 30px
-          const indicator = createRefreshIndicator();
-          const maxPull = 120;
-          const progress = Math.min(diff / maxPull, 1);
-          
-          // Smooth indicator movement
-          indicator.style.top = `${-80 + (progress * 100)}px`; // Move from -80px to 20px
-          indicator.style.opacity = Math.min(progress * 2, 1);
-          indicator.style.transform = `translateX(-50%) scale(${0.8 + (progress * 0.3)})`;
-
-          const spinner = indicator.querySelector('.spinner-ring');
-          const center = indicator.querySelector('.spinner-center');
-          
-          // Rotate ring based on pull progress
-          if (spinner) {
-            spinner.style.transform = `rotate(${progress * 360}deg)`;
-          }
-
-          // Change arrow direction and color based on progress
-          if (center) {
-            if (progress >= 0.8) {
-              center.innerHTML = '✓';
-              center.style.color = '#4CAF50';
-              center.style.fontSize = '18px';
-              indicator.style.background = 'linear-gradient(135deg, rgba(76, 175, 80, 0.95), rgba(129, 199, 132, 0.9))';
-              indicator.style.borderColor = 'rgba(76, 175, 80, 0.6)';
-            } else if (progress >= 0.5) {
-              center.innerHTML = '↻';
-              center.style.color = '#7ef4d3';
-              center.style.fontSize = '16px';
-            } else {
-              center.innerHTML = '⬇';
-              center.style.color = '#666';
-              center.style.fontSize = '16px';
-            }
-          }
-
-          if (diff > maxPull) { // Pull down more than 120px
-            // Add completion animation
-            indicator.classList.add('refresh-complete');
-            
-            // Trigger refresh with enhanced animation
-            setTimeout(() => {
-              indicator.classList.add('refresh-spinning');
-              indicator.querySelector('.spinner-center').innerHTML = '↻';
-              
-              // Show loading state briefly before refresh
-              setTimeout(() => {
-                window.location.reload();
-              }, 400);
-            }, 100);
-          }
+        if (diff > 80) { // Pull down more than 80px
+          showRefresh();
+          // Refresh the page after showing the loader
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
         }
       });
 
       document.addEventListener('touchend', function(e) {
-        if (refreshIndicator) {
-          // Smooth hide animation
-          refreshIndicator.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
-          refreshIndicator.style.top = '-80px';
-          refreshIndicator.style.opacity = '0';
-          refreshIndicator.style.transform = 'translateX(-50%) scale(0.8)';
-          
-          // Reset after animation
-          setTimeout(() => {
-            if (refreshIndicator) {
-              refreshIndicator.classList.remove('refresh-complete', 'refresh-spinning');
-              refreshIndicator.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 240, 255, 0.9))';
-              refreshIndicator.style.borderColor = 'rgba(126, 244, 211, 0.4)';
-              
-              const center = refreshIndicator.querySelector('.spinner-center');
-              if (center) {
-                center.innerHTML = '⬇';
-                center.style.color = '#666';
-                center.style.fontSize = '16px';
-              }
-              
-              const spinner = refreshIndicator.querySelector('.spinner-ring');
-              if (spinner) {
-                spinner.style.transform = 'rotate(0deg)';
-              }
-            }
-          }, 500);
-        }
+        hideRefresh();
         isPulling = false;
       });
+    </script>
     </script>
   </body>
 </html>
