@@ -19,14 +19,17 @@
       rel="apple-touch-icon"
       href="/assets/icons/apple-touch-icon.png"
     />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio - My World</title>
-    
-    <!-- Force mobile layout script - must run before styles -->
+    <!-- Force mobile layout and redirect for small screens -->
     <script>
-      // Force mobile layout even if user selects desktop mode
-      const isSmallScreen = Math.min(window.screen.width, window.innerWidth) <= 1024;
+      // Best-practice: enforce mobile layout regardless of user agent or desktop site request
+      const isSmallScreen = Math.min(window.screen.width, window.innerWidth) <= 768;
       if (isSmallScreen) {
+        // Redirect to mobile site if not already there
+        if (!window.location.href.startsWith('https://m-biswajit-me.vercel.app')) {
+          window.location.href = 'https://m-biswajit-me.vercel.app/';
+        }
         document.documentElement.classList.add('force-mobile');
       }
     </script>
@@ -231,9 +234,8 @@
       .force-mobile .animation-wrapper {
         display: none !important;
       }
-      
       /* CSS-only enforcement for real device dimensions */
-      @media screen and (max-device-width: 1024px) {
+      @media screen and (max-device-width: 768px) {
         .desktop-content {
           display: none !important;
         }
